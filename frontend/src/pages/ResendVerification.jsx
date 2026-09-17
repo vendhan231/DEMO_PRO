@@ -41,9 +41,9 @@ const ResendVerification = () => {
         setStatus("success")
         setMessage(res.message || "Verification email sent successfully.")
       }
-    } catch {
+    } catch (err) {
       setStatus("error")
-      setMessage("Failed to send verification email. Please try again.")
+      setMessage(err.message || "Failed to send verification email. Please try again.")
     } finally {
       setLoading(false)
     }
