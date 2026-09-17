@@ -26,7 +26,7 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BACKEND_DIR, "uploads")
     COVERS_FOLDER = os.path.join(BACKEND_DIR, "uploads", "covers")
     BOOKS_FOLDER = os.path.join(BACKEND_DIR, "uploads", "books")
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    MAX_CONTENT_LENGTH = 4 * 1024 * 1024
     ALLOWED_COVER_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
     ALLOWED_BOOK_EXTENSIONS = {"pdf"}
     EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
@@ -34,5 +34,5 @@ class Config:
     EMAIL_USER = os.environ.get("EMAIL_USER", "")
     EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
     EMAIL_FROM = os.environ.get("EMAIL_FROM", "noreply@bookverse.com")
-    MAX_COVER_SIZE = 5 * 1024 * 1024
-    MAX_BOOK_SIZE = 50 * 1024 * 1024
+    MAX_COVER_SIZE = 2 * 1024 * 1024
+    MAX_BOOK_SIZE = 2 * 1024 * 1024

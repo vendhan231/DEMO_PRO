@@ -5,7 +5,8 @@ from app.mongo_service import create_user, create_book, get_user_by_email, get_b
 app = create_app()
 
 with app.app_context():
-    db.create_all()
+    if not app.config.get("USE_MONGO"):
+        db.create_all()
 
     if app.config.get("USE_MONGO"):
         if not get_user_by_email("admin@bookverse.com"):

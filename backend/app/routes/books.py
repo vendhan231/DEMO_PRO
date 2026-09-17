@@ -59,6 +59,12 @@ def handle_file_upload(file_key, folder_config_key, allowed_check_fn, max_size_k
         return None
     if not allowed_check_fn(file.filename):
         return {"error": f"Invalid file type for {file_key}"}
+    file.seek(0, 2)
+    file_size = file.tell()
+    file.seek(0)
+    max_size = current_app.config.get(max_size_key, 4 * 1024 * 1024)
+    if file_size > max_size:
+        return {"error": f"{file_key} exceeds maximum size of {max_size // (1024 * 1024)}MB"}
     filename = secure_filename(file.filename)
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     stem, ext = os.path.splitext(filename)
@@ -155,12 +161,12 @@ def add_book():
     if price is None:
         return jsonify({"error": "Price is required"}), 400
 
-    cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file)
+    cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file, "MAX_COVER_SIZE")
     if isinstance(cover_result, dict) and "error" in cover_result:
         return jsonify({"error": cover_result["error"]}), 400
     cover_image = cover_result
 
-    book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file)
+    book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file, "MAX_BOOK_SIZE")
     if isinstance(book_file_result, dict) and "error" in book_file_result:
         return jsonify({"error": book_file_result["error"]}), 400
     book_file = book_file_result
@@ -208,12 +214,12 @@ def update_book(book_id):
             updates["description"] = request.form["description"].strip()
         if "price" in request.form:
             updates["price"] = float(request.form["price"])
-        cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file)
+        cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file, "MAX_COVER_SIZE")
         if isinstance(cover_result, dict):
             return jsonify({"error": cover_result["error"]}), 400
         if cover_result:
             updates["cover_image"] = cover_result
-        book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file)
+        book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file, "MAX_BOOK_SIZE")
         if isinstance(book_file_result, dict):
             return jsonify({"error": book_file_result["error"]}), 400
         if book_file_result:
@@ -239,13 +245,13 @@ def update_book(book_id):
     if "price" in request.form:
         book.price = float(request.form["price"])
 
-    cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file)
+    cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file, "MAX_COVER_SIZE")
     if isinstance(cover_result, dict):
         return jsonify({"error": cover_result["error"]}), 400
     if cover_result:
         book.cover_image = cover_result
 
-    book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file)
+    book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file, "MAX_BOOK_SIZE")
     if isinstance(book_file_result, dict):
         return jsonify({"error": book_file_result["error"]}), 400
     if book_file_result:

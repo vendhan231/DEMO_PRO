@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from pymongo import MongoClient
@@ -71,5 +71,17 @@ def create_app(config_name=None):
             "database": "mongodb",
             "mongo": {"connected": True, "database": mongo_db.name},
         }
+
+    @app.errorhandler(413)
+    def request_entity_too_large(e):
+        return jsonify({"error": "File too large. Maximum request size is 4MB (Vercel limit). Please reduce file sizes."}), 413
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return jsonify({"error": "Not found"}), 404
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        return jsonify({"error": "Internal server error"}), 500
 
     return app
