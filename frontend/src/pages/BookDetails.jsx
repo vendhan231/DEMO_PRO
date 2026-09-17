@@ -90,15 +90,23 @@ const BookDetails = () => {
               )}
             </div>
             {(book.book_file_url || book.book_file) && (
-              <a
-                href={book.book_file_url || mediaUrl(`/uploads/books/${book.book_file}`)}
-                target="_blank"
-                rel="noopener noreferrer"
-                download
-                className="block text-center mt-3 text-sm text-blue hover:underline"
-              >
-                Read Sample PDF
-              </a>
+              <div className="flex justify-center gap-4 mt-3 text-sm">
+                <a
+                  href={book.book_file_url || mediaUrl(`/uploads/books/${book.book_file}`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue hover:underline"
+                >
+                  View PDF
+                </a>
+                <a
+                  href={book.book_file_url || mediaUrl(`/uploads/books/${book.book_file}`)}
+                  download
+                  className="text-orange hover:underline"
+                >
+                  Download PDF
+                </a>
+              </div>
             )}
           </div>
 
