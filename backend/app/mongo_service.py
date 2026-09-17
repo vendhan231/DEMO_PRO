@@ -300,7 +300,7 @@ def create_order_from_cart(user_id):
             continue
         quantity = int(item.get("quantity", 1))
         price = float(book.get("price", 0))
-        items.append({"id": next_sequence("order_items"), "book_id": book["id"], "title": book.get("title"), "author": book.get("author"), "quantity": quantity, "unit_price": price, "book_file": book.get("book_file")})
+        items.append({"id": next_sequence("order_items"), "book_id": book["id"], "title": book.get("title"), "author": book.get("author"), "quantity": quantity, "unit_price": price, "book_file": book.get("book_file"), "book_file_url": book.get("book_file_url")})
         total += price * quantity
     if not items:
         return None

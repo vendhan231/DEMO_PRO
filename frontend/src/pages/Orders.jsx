@@ -55,7 +55,7 @@ const Orders = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <Link to={`/books/${item.book_id}`} className="text-orange" title="View book"><Eye size={18} /></Link>
-                      {item.book_file_url && <a href={mediaUrl(item.book_file_url)} download className="text-orange" title="Download book"><Download size={18} /></a>}
+                      {(item.book_file_url || item.book_file) && <a href={item.book_file_url || mediaUrl(`/uploads/books/${item.book_file}`)} download className="text-orange" title="Download book"><Download size={18} /></a>}
                     </div>
                   </div>
                 ))}

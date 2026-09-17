@@ -89,11 +89,12 @@ const BookDetails = () => {
                 <div className="w-full h-full flex items-center justify-center text-6xl">📚</div>
               )}
             </div>
-            {book.book_file_url && (
+            {(book.book_file_url || book.book_file) && (
               <a
-                href={book.book_file_url}
+                href={book.book_file_url || mediaUrl(`/uploads/books/${book.book_file}`)}
                 target="_blank"
                 rel="noopener noreferrer"
+                download
                 className="block text-center mt-3 text-sm text-blue hover:underline"
               >
                 Read Sample PDF
