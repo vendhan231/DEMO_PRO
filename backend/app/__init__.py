@@ -43,6 +43,7 @@ def create_app(config_name=None):
             app.config["MONGO_DB"] = None
             app.config["MONGO_ERROR"] = str(exc)
             app.config["USE_MONGO"] = False
+            raise RuntimeError(f"MongoDB connection failed: {exc}") from exc
     else:
         mongo_client = None
         mongo_db = None
@@ -51,7 +52,9 @@ def create_app(config_name=None):
         app.config["MONGO_ERROR"] = "MONGO_URI is not configured"
         app.config["USE_MONGO"] = False
 
-    db.init_app(app)
+    if not app.config.get("USE_MONGO"):
+        db.init_app(app)
+
     jwt.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}}, supports_credentials=True)
 
@@ -86,10 +89,11 @@ def create_app(config_name=None):
             status["mongo"] = {"connected": False, "error": app.config.get("MONGO_ERROR")}
         return status
 
-    with app.app_context():
-        db.create_all()
-        if "verification_sent_at" not in {column["name"] for column in inspect(db.engine).get_columns("users")}:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN verification_sent_at DATETIME"))
-            db.session.commit()
+    if not app.config.get("USE_MONGO"):
+        with app.app_context():
+            db.create_all()
+            if "verification_sent_at" not in {column["name"] for column in inspect(db.engine).get_columns("users")}:
+                db.session.execute(text("ALTER TABLE users ADD COLUMN verification_sent_at DATETIME"))
+                db.session.commit()
 
     return app
