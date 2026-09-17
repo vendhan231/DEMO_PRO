@@ -152,7 +152,7 @@ const api = {
     headers: getAuthHeaders(),
   }).then(handleResponse),
 
-  clearCart: () => fetch(`${API_BASE_URL}/cart/clear", {
+  clearCart: () => fetch(`${API_BASE_URL}/cart/clear`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   }).then(handleResponse),
