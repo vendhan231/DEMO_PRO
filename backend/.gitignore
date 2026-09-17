@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# Flask
+instance/
+*.db
+*.sqlite3
+.DS_Store
+
+# Environment variables
+.env
+
+# Uploads (keep directory structure, ignore content)
+uploads/covers/*
+uploads/books/*
+!uploads/covers/.gitkeep
+!uploads/books/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
