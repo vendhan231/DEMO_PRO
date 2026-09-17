@@ -40,9 +40,9 @@ def send_email_smtp(to_email, subject, html_content, text_content=None):
 
         context = ssl.create_default_context()
         if port == 465:
-            server = smtplib.SMTP_SSL(host, port, context=context)
+            server = smtplib.SMTP_SSL(host, port, context=context, timeout=10)
         else:
-            server = smtplib.SMTP(host, port)
+            server = smtplib.SMTP(host, port, timeout=10)
             server.starttls(context=context)
         server.login(username, password)
         server.sendmail(from_email, to_email, msg.as_string())
