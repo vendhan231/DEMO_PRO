@@ -36,3 +36,7 @@ class Config:
     EMAIL_FROM = os.environ.get("EMAIL_FROM", "noreply@bookverse.com")
     MAX_COVER_SIZE = 2 * 1024 * 1024
     MAX_BOOK_SIZE = 2 * 1024 * 1024
+    CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
+    CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
+    CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
+    CLOUDINARY_UPLOAD_PRESET = os.environ.get("CLOUDINARY_UPLOAD_PRESET", "")

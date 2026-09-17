@@ -117,13 +117,15 @@ def serialize_book(book_doc):
         "description": book_doc.get("description"),
         "price": book_doc.get("price"),
         "cover_image": book_doc.get("cover_image"),
+        "cover_url": book_doc.get("cover_url"),
+        "cover_public_id": book_doc.get("cover_public_id"),
         "book_file": book_doc.get("book_file"),
+        "book_file_url": book_doc.get("book_file_url"),
+        "book_file_public_id": book_doc.get("book_file_public_id"),
         "uploaded_by": book_doc.get("uploaded_by"),
         "created_at": book_doc.get("created_at").isoformat() if book_doc.get("created_at") else None,
         "updated_at": book_doc.get("updated_at").isoformat() if book_doc.get("updated_at") else None,
     }
-    payload["cover_url"] = f"/uploads/covers/{book_doc.get('cover_image')}" if book_doc.get("cover_image") else None
-    payload["book_file_url"] = f"/uploads/books/{book_doc.get('book_file')}" if book_doc.get("book_file") else None
     return payload
 
 
@@ -156,7 +158,7 @@ def search_books(query):
     return [serialize_book(doc) for doc in cursor]
 
 
-def create_book(title, author, category, description, price, cover_image=None, book_file=None, uploaded_by=None):
+def create_book(title, author, category, description, price, cover_image=None, book_file=None, uploaded_by=None, cover_url=None, cover_public_id=None, book_file_url=None, book_file_public_id=None):
     db = get_db()
     now = datetime.utcnow()
     book_doc = {
@@ -167,7 +169,11 @@ def create_book(title, author, category, description, price, cover_image=None, b
         "description": description.strip() if description else None,
         "price": float(price),
         "cover_image": cover_image,
+        "cover_url": cover_url,
+        "cover_public_id": cover_public_id,
         "book_file": book_file,
+        "book_file_url": book_file_url,
+        "book_file_public_id": book_file_public_id,
         "uploaded_by": uploaded_by,
         "created_at": now,
         "updated_at": now,
@@ -313,7 +319,8 @@ def serialize_order(order):
     db = get_db()
     items = []
     for item in db.order_items.find({"order_id": order.get("id")}).sort("id", 1):
-        items.append({"id": item.get("id"), "book_id": item.get("book_id"), "title": item.get("title"), "author": item.get("author"), "quantity": item.get("quantity", 1), "unit_price": item.get("unit_price", 0), "subtotal": item.get("unit_price", 0) * item.get("quantity", 1), "book_file": item.get("book_file"), "book_file_url": f"/uploads/books/{item.get('book_file')}" if item.get("book_file") else None})
+        book_file_url = item.get("book_file_url") or (f"/uploads/books/{item.get('book_file')}" if item.get("book_file") else None)
+        items.append({"id": item.get("id"), "book_id": item.get("book_id"), "title": item.get("title"), "author": item.get("author"), "quantity": item.get("quantity", 1), "unit_price": item.get("unit_price", 0), "subtotal": item.get("unit_price", 0) * item.get("quantity", 1), "book_file": item.get("book_file"), "book_file_url": book_file_url})
     return {"id": order.get("id"), "user_id": order.get("user_id"), "total_amount": order.get("total_amount", 0), "status": order.get("status", "placed"), "created_at": order.get("created_at").isoformat() if order.get("created_at") else None, "items": items}
 
 

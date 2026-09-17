@@ -14,6 +14,10 @@ from ..mongo_service import (
     get_user_by_id,
     list_books as mongo_list_books,
 )
+from ..services.cloudinary_service import (
+    is_cloudinary_configured,
+    delete_asset,
+)
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -69,34 +73,60 @@ def admin_add_book():
     description = request.form.get("description", "").strip()
     price = request.form.get("price", type=float)
 
+    cover_url = request.form.get("cover_url", "").strip()
+    cover_public_id = request.form.get("cover_public_id", "").strip()
+    book_file_url = request.form.get("book_file_url", "").strip()
+    book_file_public_id = request.form.get("book_file_public_id", "").strip()
+
     if not title or not author or not category or price is None:
         return jsonify({"error": "Title, author, category, and price are required"}), 400
 
-    cover_image = None
-    book_file = None
+    use_cloudinary = is_cloudinary_configured()
 
-    if "cover_image" in request.files:
-        file = request.files["cover_image"]
-        if file and file.filename and allowed_cover_file(file.filename):
-            filename = secure_filename(file.filename)
-            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-            stem, ext = os.path.splitext(filename)
-            filename = f"{stem}_{timestamp}{ext}"
-            file.save(os.path.join(current_app.config["COVERS_FOLDER"], filename))
-            cover_image = filename
+    if use_cloudinary:
+        if not cover_url:
+            return jsonify({"error": "Book cover is required"}), 400
+        cover_image = None
+        book_file = None
+    else:
+        cover_image = None
+        book_file = None
 
-    if "book_file" in request.files:
-        file = request.files["book_file"]
-        if file and file.filename and allowed_book_file(file.filename):
-            filename = secure_filename(file.filename)
-            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-            stem, ext = os.path.splitext(filename)
-            filename = f"{stem}_{timestamp}{ext}"
-            file.save(os.path.join(current_app.config["BOOKS_FOLDER"], filename))
-            book_file = filename
+        if "cover_image" in request.files:
+            file = request.files["cover_image"]
+            if file and file.filename and allowed_cover_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+                stem, ext = os.path.splitext(filename)
+                filename = f"{stem}_{timestamp}{ext}"
+                folder = current_app.config["COVERS_FOLDER"]
+                os.makedirs(folder, exist_ok=True)
+                file.save(os.path.join(folder, filename))
+                cover_image = filename
+
+        if "book_file" in request.files:
+            file = request.files["book_file"]
+            if file and file.filename and allowed_book_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+                stem, ext = os.path.splitext(filename)
+                filename = f"{stem}_{timestamp}{ext}"
+                folder = current_app.config["BOOKS_FOLDER"]
+                os.makedirs(folder, exist_ok=True)
+                file.save(os.path.join(folder, filename))
+                book_file = filename
 
     if current_app.config.get("USE_MONGO"):
-        book = mongo_create_book(title, author, category, description, price, cover_image, book_file, uploaded_by=user_id)
+        book = mongo_create_book(
+            title, author, category, description, price,
+            cover_image=cover_image,
+            book_file=book_file,
+            uploaded_by=user_id,
+            cover_url=cover_url if use_cloudinary else None,
+            cover_public_id=cover_public_id if use_cloudinary else None,
+            book_file_url=book_file_url if use_cloudinary else None,
+            book_file_public_id=book_file_public_id if use_cloudinary else None,
+        )
         return jsonify({"message": "Book added successfully", "book": serialize_book(book)}), 201
 
     book = Book(
@@ -120,8 +150,16 @@ def admin_add_book():
 @admin_required
 def admin_delete_book(book_id):
     if current_app.config.get("USE_MONGO"):
-        if not mongo_get_book_by_id(book_id):
+        book = mongo_get_book_by_id(book_id)
+        if not book:
             return jsonify({"error": "Book Not Found"}), 404
+
+        if is_cloudinary_configured():
+            if book.get("cover_public_id"):
+                delete_asset(book["cover_public_id"], "image")
+            if book.get("book_file_public_id"):
+                delete_asset(book["book_file_public_id"], "raw")
+
         mongo_delete_book(book_id)
         return jsonify({"message": "Book deleted successfully"}), 200
 
@@ -163,5 +201,6 @@ def admin_stats():
     return jsonify({
         "total_books": total_books,
         "total_users": total_users,
+        "total_carts": total_carts,
         "total_cart_items": total_cart_items,
     }), 200

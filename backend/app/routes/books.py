@@ -18,6 +18,10 @@ from ..mongo_service import (
     serialize_user,
     verify_password,
 )
+from ..services.cloudinary_service import (
+    is_cloudinary_configured,
+    delete_asset,
+)
 
 books_bp = Blueprint("books", __name__)
 
@@ -69,12 +73,20 @@ def handle_file_upload(file_key, folder_config_key, allowed_check_fn, max_size_k
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     stem, ext = os.path.splitext(filename)
     filename = f"{stem}_{timestamp}{ext}"
-    file.save(os.path.join(current_app.config[folder_config_key], filename))
+    folder = current_app.config[folder_config_key]
+    os.makedirs(folder, exist_ok=True)
+    file.save(os.path.join(folder, filename))
     return filename
 
 
 def get_current_user_id():
     return int(get_jwt_identity())
+
+
+def is_cloudinary_url(url):
+    if not url:
+        return False
+    return "cloudinary.com" in url or "res.cloudinary.com" in url
 
 
 @books_bp.route("/", methods=["GET"])
@@ -156,23 +168,45 @@ def add_book():
     description = request.form.get("description", "").strip()
     price = request.form.get("price", type=float)
 
+    cover_url = request.form.get("cover_url", "").strip()
+    cover_public_id = request.form.get("cover_public_id", "").strip()
+    book_file_url = request.form.get("book_file_url", "").strip()
+    book_file_public_id = request.form.get("book_file_public_id", "").strip()
+
     if not title:
         return jsonify({"error": "Book title is required"}), 400
     if price is None:
         return jsonify({"error": "Price is required"}), 400
 
-    cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file, "MAX_COVER_SIZE")
-    if isinstance(cover_result, dict) and "error" in cover_result:
-        return jsonify({"error": cover_result["error"]}), 400
-    cover_image = cover_result
+    use_cloudinary = is_cloudinary_configured()
 
-    book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file, "MAX_BOOK_SIZE")
-    if isinstance(book_file_result, dict) and "error" in book_file_result:
-        return jsonify({"error": book_file_result["error"]}), 400
-    book_file = book_file_result
+    if use_cloudinary:
+        if not cover_url:
+            return jsonify({"error": "Book cover is required"}), 400
+        cover_image = None
+        book_file = None
+    else:
+        cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file, "MAX_COVER_SIZE")
+        if isinstance(cover_result, dict) and "error" in cover_result:
+            return jsonify({"error": cover_result["error"]}), 400
+        cover_image = cover_result
+
+        book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file, "MAX_BOOK_SIZE")
+        if isinstance(book_file_result, dict) and "error" in book_file_result:
+            return jsonify({"error": book_file_result["error"]}), 400
+        book_file = book_file_result
 
     if current_app.config.get("USE_MONGO"):
-        book = mongo_create_book(title, author, category, description, price, cover_image, book_file, uploaded_by=user_id)
+        book = mongo_create_book(
+            title, author, category, description, price,
+            cover_image=cover_image,
+            book_file=book_file,
+            uploaded_by=user_id,
+            cover_url=cover_url if use_cloudinary else None,
+            cover_public_id=cover_public_id if use_cloudinary else None,
+            book_file_url=book_file_url if use_cloudinary else None,
+            book_file_public_id=book_file_public_id if use_cloudinary else None,
+        )
         return jsonify({"message": "Book added successfully", "book": serialize_book(book)}), 201
 
     book = Book(
@@ -214,16 +248,37 @@ def update_book(book_id):
             updates["description"] = request.form["description"].strip()
         if "price" in request.form:
             updates["price"] = float(request.form["price"])
-        cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file, "MAX_COVER_SIZE")
-        if isinstance(cover_result, dict):
-            return jsonify({"error": cover_result["error"]}), 400
-        if cover_result:
-            updates["cover_image"] = cover_result
-        book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file, "MAX_BOOK_SIZE")
-        if isinstance(book_file_result, dict):
-            return jsonify({"error": book_file_result["error"]}), 400
-        if book_file_result:
-            updates["book_file"] = book_file_result
+
+        cover_url = request.form.get("cover_url", "").strip()
+        cover_public_id = request.form.get("cover_public_id", "").strip()
+        book_file_url = request.form.get("book_file_url", "").strip()
+        book_file_public_id = request.form.get("book_file_public_id", "").strip()
+
+        use_cloudinary = is_cloudinary_configured()
+
+        if use_cloudinary:
+            if cover_url:
+                updates["cover_url"] = cover_url
+                updates["cover_public_id"] = cover_public_id
+                if book.get("cover_public_id") and book.get("cover_public_id") != cover_public_id:
+                    delete_asset(book["cover_public_id"], "image")
+            if book_file_url:
+                updates["book_file_url"] = book_file_url
+                updates["book_file_public_id"] = book_file_public_id
+                if book.get("book_file_public_id") and book.get("book_file_public_id") != book_file_public_id:
+                    delete_asset(book["book_file_public_id"], "raw")
+        else:
+            cover_result = handle_file_upload("cover_image", "COVERS_FOLDER", allowed_cover_file, "MAX_COVER_SIZE")
+            if isinstance(cover_result, dict):
+                return jsonify({"error": cover_result["error"]}), 400
+            if cover_result:
+                updates["cover_image"] = cover_result
+            book_file_result = handle_file_upload("book_file", "BOOKS_FOLDER", allowed_book_file, "MAX_BOOK_SIZE")
+            if isinstance(book_file_result, dict):
+                return jsonify({"error": book_file_result["error"]}), 400
+            if book_file_result:
+                updates["book_file"] = book_file_result
+
         updated = mongo_update_book(book_id, updates)
         return jsonify({"message": "Book updated successfully", "book": serialize_book(updated)}), 200
 
@@ -273,6 +328,13 @@ def delete_book(book_id):
         user = mongo_get_user_by_id(user_id)
         if uploader != user_id and (not user or user.get("role") != "admin"):
             return jsonify({"error": "Access Denied"}), 403
+
+        if is_cloudinary_configured():
+            if book.get("cover_public_id"):
+                delete_asset(book["cover_public_id"], "image")
+            if book.get("book_file_public_id"):
+                delete_asset(book["book_file_public_id"], "raw")
+
         mongo_delete_book(book_id)
         return jsonify({"message": "Book deleted successfully"}), 200
 

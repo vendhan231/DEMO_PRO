@@ -41,6 +41,39 @@ async function handleResponse(response) {
   return response.text()
 }
 
+async function uploadToCloudinary(file, resourceType) {
+  const token = localStorage.getItem("token")
+  if (!token) throw new Error("Not authenticated")
+
+  const signatureRes = await fetch(`${API_BASE_URL}/uploads/signature`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ resource_type: resourceType }),
+  })
+
+  const signatureData = await handleResponse(signatureRes)
+
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("api_key", signatureData.api_key)
+  formData.append("timestamp", signatureData.timestamp.toString())
+  formData.append("signature", signatureData.signature)
+  if (signatureData.folder) formData.append("folder", signatureData.folder)
+
+  const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${signatureData.cloud_name}/${resourceType}/upload`
+  const uploadRes = await fetch(cloudinaryUrl, {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!uploadRes.ok) {
+    const errorText = await uploadRes.text()
+    throw new Error(`Cloudinary upload failed: ${errorText}`)
+  }
+
+  return uploadRes.json()
+}
+
 const api = {
   register: (data) => fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
@@ -70,16 +103,19 @@ const api = {
   getBook: (id) => fetch(`${API_BASE_URL}/books/${id}`).then(handleResponse),
   searchBooks: (q) => fetch(`${API_BASE_URL}/books/search?q=${encodeURIComponent(q)}`).then(handleResponse),
 
-  addBook: (formData) => fetch(`${API_BASE_URL}/books`, {
+  uploadCover: (file) => uploadToCloudinary(file, "image"),
+  uploadPdf: (file) => uploadToCloudinary(file, "raw"),
+
+  addBook: (data) => fetch(`${API_BASE_URL}/books`, {
     method: "POST",
-    headers: getAuthHeadersNoJson(),
-    body: formData,
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
   }).then(handleResponse),
 
-  updateBook: (id, formData) => fetch(`${API_BASE_URL}/books/${id}`, {
+  updateBook: (id, data) => fetch(`${API_BASE_URL}/books/${id}`, {
     method: "PUT",
-    headers: getAuthHeadersNoJson(),
-    body: formData,
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
   }).then(handleResponse),
 
   deleteBook: (id) => fetch(`${API_BASE_URL}/books/${id}`, {
@@ -116,7 +152,7 @@ const api = {
     headers: getAuthHeaders(),
   }).then(handleResponse),
 
-  clearCart: () => fetch(`${API_BASE_URL}/cart/clear`, {
+  clearCart: () => fetch(`${API_BASE_URL}/cart/clear", {
     method: "DELETE",
     headers: getAuthHeaders(),
   }).then(handleResponse),
