@@ -1,13 +1,14 @@
 from flask import Flask
-from sqlalchemy import inspect, text
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from pymongo import MongoClient
 
 from .mongo_service import ensure_indexes
 
-db = SQLAlchemy()
+# This project is MongoDB-only. Some route modules still import `db` from the app
+# package for compatibility with the existing code structure, so it must exist
+# without reintroducing SQLite or any fallback database layer.
+db = None
 jwt = JWTManager()
 cors = CORS()
 
@@ -19,12 +20,12 @@ def create_app(config_name=None):
     app.config.from_object(Config)
     app.url_map.strict_slashes = False
 
-    mongo_client = None
-    mongo_db = None
     mongo_uri = app.config.get("MONGO_URI")
+    if not mongo_uri:
+        raise RuntimeError("MONGO_URI is not configured")
 
-    if mongo_uri:
-        try:
+    try:
+        with app.app_context():
             mongo_client = MongoClient(
                 mongo_uri,
                 serverSelectionTimeoutMS=app.config["MONGO_SERVER_SELECTION_TIMEOUT_MS"],
@@ -35,30 +36,14 @@ def create_app(config_name=None):
             app.config["MONGO_CLIENT"] = mongo_client
             app.config["MONGO_DB"] = mongo_db
             app.config["USE_MONGO"] = True
+            app.config["MONGO_ERROR"] = None
             ensure_indexes()
-        except Exception as exc:
-            mongo_client = None
-            mongo_db = None
-            app.config["MONGO_CLIENT"] = None
-            app.config["MONGO_DB"] = None
-            app.config["MONGO_ERROR"] = str(exc)
-            app.config["USE_MONGO"] = False
-            raise RuntimeError(f"MongoDB connection failed: {exc}") from exc
-    else:
-        mongo_client = None
-        mongo_db = None
-        app.config["MONGO_CLIENT"] = None
-        app.config["MONGO_DB"] = None
-        app.config["MONGO_ERROR"] = "MONGO_URI is not configured"
-        app.config["USE_MONGO"] = False
-
-    if not app.config.get("USE_MONGO"):
-        db.init_app(app)
+    except Exception as exc:
+        raise RuntimeError(f"MongoDB connection failed: {exc}") from exc
 
     jwt.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}}, supports_credentials=True)
 
-    from .models import User, Book, Cart, CartItem
     from .routes import register_routes
 
     register_routes(app)
@@ -80,20 +65,11 @@ def create_app(config_name=None):
 
     @app.route("/health")
     def health():
-        status = {"status": "ok", "message": "BookVerse API is running", "database": "sqlite"}
-        if mongo_db is not None:
-            status["database"] = "mongodb"
-            status["mongo"] = {"connected": True, "database": mongo_db.name}
-        elif app.config.get("MONGO_ERROR"):
-            status["database"] = "sqlite"
-            status["mongo"] = {"connected": False, "error": app.config.get("MONGO_ERROR")}
-        return status
-
-    if not app.config.get("USE_MONGO"):
-        with app.app_context():
-            db.create_all()
-            if "verification_sent_at" not in {column["name"] for column in inspect(db.engine).get_columns("users")}:
-                db.session.execute(text("ALTER TABLE users ADD COLUMN verification_sent_at DATETIME"))
-                db.session.commit()
+        return {
+            "status": "ok",
+            "message": "BookVerse API is running",
+            "database": "mongodb",
+            "mongo": {"connected": True, "database": mongo_db.name},
+        }
 
     return app

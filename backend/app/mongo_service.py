@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 def get_db():
     db = current_app.config.get("MONGO_DB")
-    if not db:
+    if db is None:
         raise RuntimeError("MongoDB is not configured")
     return db
 

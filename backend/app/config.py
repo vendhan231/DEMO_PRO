@@ -19,8 +19,6 @@ class Config:
     CORS_ORIGINS = [origin.strip() for origin in os.environ.get("CORS_ORIGINS", FRONTEND_URL).split(",") if origin.strip()]
     MONGO_SERVER_SELECTION_TIMEOUT_MS = int(os.environ.get("MONGO_SERVER_SELECTION_TIMEOUT_MS", "10000"))
     MONGO_CONNECT_TIMEOUT_MS = int(os.environ.get("MONGO_CONNECT_TIMEOUT_MS", "10000"))
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", f"sqlite:///{os.path.join(BACKEND_DIR, 'database', 'bookstore.db')}")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-change-in-production")
     JWT_ACCESS_TOKEN_EXPIRES = 86400
     UPLOAD_FOLDER = os.path.join(BACKEND_DIR, "uploads")
