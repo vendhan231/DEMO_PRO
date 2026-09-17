@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg-light text-neutral font-inter text-[14px] leading-[1.5];
+    margin: 0;
+    font-family: "Inter", "Helvetica Neue", "Arial", sans-serif;
+  }
+
+  h1 {
+    @apply font-bold text-navy text-[28px] sm:text-[32px];
+    font-family: "Inter", sans-serif;
+  }
+
+  h2 {
+    @apply font-bold text-navy text-[20px] sm:text-[22px];
+    font-family: "Inter", sans-serif;
+  }
+
+  h3 {
+    @apply font-bold text-navy text-[18px];
+    font-family: "Inter", sans-serif;
+  }
+
+  p {
+    @apply mb-0;
+  }
+
+  a {
+    @apply text-orange no-underline;
+  }
+
+  a:hover {
+    @apply underline;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-orange hover:bg-orange/90 text-white font-semibold rounded-full transition-colors duration-150 flex items-center justify-center;
+  }
+
+  .btn-secondary {
+    @apply bg-surface hover:bg-gray-50 text-orange border border-border-color font-semibold rounded-full transition-colors duration-150 flex items-center justify-center;
+  }
+
+  .btn-danger {
+    @apply bg-error hover:bg-error/90 text-white font-semibold rounded-full transition-colors duration-150 flex items-center justify-center;
+  }
+
+  .btn-disabled {
+    @apply bg-neutral-light text-white font-semibold rounded-full cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-border-color rounded-full focus:outline-none focus:border-orange focus:ring-1 focus:ring-orange/20 transition-colors bg-surface;
+  }
+
+  .description-field {
+    @apply w-full min-h-40 px-4 py-3 border-2 border-border-color rounded-lg bg-white text-navy leading-6 placeholder:text-neutral-light focus:outline-none focus:border-orange focus:ring-2 focus:ring-orange/20 transition-colors resize-y;
+  }
+
+  .card {
+    @apply bg-surface rounded-xl shadow-sm border border-border-light hover:shadow-md transition-shadow duration-200;
+  }
+
+  .price-original {
+    @apply line-through text-neutral-light text-sm;
+  }
+
+  .price-current {
+    @apply font-bold text-navy text-lg;
+  }
+
+  .discount-badge {
+    @apply bg-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full;
+  }
+
+  .carousel-btn {
+    @apply w-8 h-8 rounded-full bg-white border border-border-color shadow-sm flex items-center justify-center text-navy hover:bg-gray-50 transition-colors;
+  }
+}
