@@ -79,16 +79,21 @@ const AddBook = () => {
 
     setLoading(true)
 
-    const formData = new FormData()
-    formData.append("title", title)
-    formData.append("author", author)
-    formData.append("category", category)
-    formData.append("description", description)
-    formData.append("price", price)
-    formData.append("cover_image", coverImage)
-    if (bookFile) formData.append("book_file", bookFile)
-
     try {
+      const coverUpload = await api.uploadCover(coverImage)
+      const pdfUpload = bookFile ? await api.uploadPdf(bookFile) : null
+      const formData = new FormData()
+      formData.append("title", title)
+      formData.append("author", author)
+      formData.append("category", category)
+      formData.append("description", description)
+      formData.append("price", price)
+      formData.append("cover_url", coverUpload.secure_url)
+      formData.append("cover_public_id", coverUpload.public_id || "")
+      if (pdfUpload) {
+        formData.append("book_file_url", pdfUpload.secure_url)
+        formData.append("book_file_public_id", pdfUpload.public_id || "")
+      }
       const res = await api.addBook(formData)
       if (res.book) {
         setSuccess("Book added successfully! Redirecting...")

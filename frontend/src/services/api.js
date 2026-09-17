@@ -108,14 +108,14 @@ const api = {
 
   addBook: (data) => fetch(`${API_BASE_URL}/books`, {
     method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
+    headers: getAuthHeadersNoJson(),
+    body: data,
   }).then(handleResponse),
 
   updateBook: (id, data) => fetch(`${API_BASE_URL}/books/${id}`, {
     method: "PUT",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
+    headers: getAuthHeadersNoJson(),
+    body: data,
   }).then(handleResponse),
 
   deleteBook: (id) => fetch(`${API_BASE_URL}/books/${id}`, {

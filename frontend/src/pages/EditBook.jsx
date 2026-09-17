@@ -103,16 +103,23 @@ const EditBook = () => {
 
     setLoading(true)
 
-    const formData = new FormData()
-    formData.append("title", title)
-    formData.append("author", author)
-    formData.append("category", category)
-    formData.append("description", description)
-    formData.append("price", price)
-    if (coverImage) formData.append("cover_image", coverImage)
-    if (bookFile) formData.append("book_file", bookFile)
-
     try {
+      const formData = new FormData()
+      formData.append("title", title)
+      formData.append("author", author)
+      formData.append("category", category)
+      formData.append("description", description)
+      formData.append("price", price)
+      if (coverImage) {
+        const coverUpload = await api.uploadCover(coverImage)
+        formData.append("cover_url", coverUpload.secure_url)
+        formData.append("cover_public_id", coverUpload.public_id || "")
+      }
+      if (bookFile) {
+        const pdfUpload = await api.uploadPdf(bookFile)
+        formData.append("book_file_url", pdfUpload.secure_url)
+        formData.append("book_file_public_id", pdfUpload.public_id || "")
+      }
       const res = await api.updateBook(id, formData)
       if (res.book || res.message) {
         setSuccess("Book updated successfully!")

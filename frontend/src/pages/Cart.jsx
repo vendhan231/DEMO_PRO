@@ -75,9 +75,9 @@ const CartPage = () => {
         {cart.items.map((item) => (
           <div key={item.id} className="bg-white rounded-xl shadow-sm border border-border-light p-4 flex items-center gap-4">
             <div className="w-20 h-28 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-              {item.book?.cover_image ? (
+              {item.book?.cover_url || item.book?.cover_image ? (
                 <img
-                  src={mediaUrl(`/uploads/covers/${item.book.cover_image}`)}
+                  src={item.book.cover_url || mediaUrl(`/uploads/covers/${item.book.cover_image}`)}
                   alt={item.book.title}
                   className="w-full h-full object-cover"
                   onError={(e) => { e.target.style.display = "none" }}

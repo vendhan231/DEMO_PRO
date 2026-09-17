@@ -40,9 +40,7 @@ const BookCard = ({ book, onUpdate, discountPercent = 0, inStock = true }) => {
 
   const coverUrl = imgError
     ? null
-    : book.cover_image
-      ? mediaUrl(`/uploads/covers/${book.cover_image}`)
-      : null
+    : book.cover_url || (book.cover_image ? mediaUrl(`/uploads/covers/${book.cover_image}`) : null)
 
   const discountedPrice = discountPercent > 0
     ? Math.round(book.price * (1 - discountPercent / 100))

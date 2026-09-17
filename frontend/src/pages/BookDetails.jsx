@@ -70,9 +70,7 @@ const BookDetails = () => {
 
   const coverUrl = imgError
     ? null
-    : book.cover_image
-      ? mediaUrl(`/uploads/covers/${book.cover_image}`)
-      : null
+    : book.cover_url || (book.cover_image ? mediaUrl(`/uploads/covers/${book.cover_image}`) : null)
 
   return (
     <div className="container mx-auto px-4 py-8">

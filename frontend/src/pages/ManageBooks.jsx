@@ -73,9 +73,9 @@ const ManageBooks = () => {
                 <tr key={book.id} className="border-b border-border-light last:border-0">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      {book.cover_image ? (
+                      {book.cover_url || book.cover_image ? (
                         <img
-                          src={mediaUrl(`/uploads/covers/${book.cover_image}`)}
+                          src={book.cover_url || mediaUrl(`/uploads/covers/${book.cover_image}`)}
                           alt={book.title}
                           className="w-10 h-14 object-cover rounded"
                           onError={(e) => { e.target.style.display = "none" }}

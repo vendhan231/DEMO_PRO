@@ -237,9 +237,9 @@ const Home = () => {
                 <Link key={book.id} to={`/books/${book.id}`} className="block group">
                   <div className="bg-white rounded-xl shadow-sm border border-border-light p-3 text-center group-hover:shadow-md transition-shadow">
                     <div className="aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden mx-auto mb-2 flex items-center justify-center">
-                      {book.cover_image ? (
+                        {book.cover_url || book.cover_image ? (
                         <img
-                          src={mediaUrl(`/uploads/covers/${book.cover_image}`)}
+                          src={book.cover_url || mediaUrl(`/uploads/covers/${book.cover_image}`)}
                           alt={book.title}
                           className="max-w-full max-h-full object-contain"
                           onError={(e) => { e.target.style.display = "none" }}
