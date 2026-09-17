@@ -15,7 +15,9 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
     MONGO_URI = os.environ.get("MONGO_URI")
     MONGO_DATABASE_NAME = os.environ.get("MONGO_DATABASE_NAME", "bookverse")
-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+    VERCEL_URL = (os.environ.get("VERCEL_PROJECT_PRODUCTION_URL") or os.environ.get("VERCEL_URL", "")).strip()
+    DEFAULT_FRONTEND_URL = f"https://{VERCEL_URL}" if VERCEL_URL else "http://localhost:5173"
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", DEFAULT_FRONTEND_URL).rstrip("/")
     CORS_ORIGINS = [origin.strip() for origin in os.environ.get("CORS_ORIGINS", FRONTEND_URL).split(",") if origin.strip()]
     MONGO_SERVER_SELECTION_TIMEOUT_MS = int(os.environ.get("MONGO_SERVER_SELECTION_TIMEOUT_MS", "10000"))
     MONGO_CONNECT_TIMEOUT_MS = int(os.environ.get("MONGO_CONNECT_TIMEOUT_MS", "10000"))

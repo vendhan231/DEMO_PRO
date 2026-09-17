@@ -1,0 +1,72 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex 1064750..8b91b7c 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -25,3 +25,5 @@[m [mThumbs.db[m
+ backend/venv312/[m
+ __pycache__/[m
+ *.pyc[m
+[32m+[m[32m__pycache__/[m
+[32m+[m[32m*.pyc[m
+[1mdiff --git a/backend/app/config.py b/backend/app/config.py[m
+[1mindex c78a748..0aa7da4 100644[m
+[1m--- a/backend/app/config.py[m
+[1m+++ b/backend/app/config.py[m
+[36m@@ -15,7 +15,9 @@[m [mclass Config:[m
+     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")[m
+     MONGO_URI = os.environ.get("MONGO_URI")[m
+     MONGO_DATABASE_NAME = os.environ.get("MONGO_DATABASE_NAME", "bookverse")[m
+[31m-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")[m
+[32m+[m[32m    VERCEL_URL = (os.environ.get("VERCEL_PROJECT_PRODUCTION_URL") or os.environ.get("VERCEL_URL", "")).strip()[m
+[32m+[m[32m    DEFAULT_FRONTEND_URL = f"https://{VERCEL_URL}" if VERCEL_URL else "http://localhost:5173"[m
+[32m+[m[32m    FRONTEND_URL = os.environ.get("FRONTEND_URL", DEFAULT_FRONTEND_URL).rstrip("/")[m
+     CORS_ORIGINS = [origin.strip() for origin in os.environ.get("CORS_ORIGINS", FRONTEND_URL).split(",") if origin.strip()][m
+     MONGO_SERVER_SELECTION_TIMEOUT_MS = int(os.environ.get("MONGO_SERVER_SELECTION_TIMEOUT_MS", "10000"))[m
+     MONGO_CONNECT_TIMEOUT_MS = int(os.environ.get("MONGO_CONNECT_TIMEOUT_MS", "10000"))[m
+[1mdiff --git a/backend/app/services/email_service.py b/backend/app/services/email_service.py[m
+[1mindex 224bd1f..fee90a2 100644[m
+[1m--- a/backend/app/services/email_service.py[m
+[1m+++ b/backend/app/services/email_service.py[m
+[36m@@ -108,7 +108,8 @@[m [mdef render_verification_email(to_name, token, frontend_url=None):[m
+ </html>"""[m
+ [m
+ [m
+[31m-def render_welcome_email(to_name):[m
+[32m+[m[32mdef render_welcome_email(to_name, frontend_url=None):[m
+[32m+[m[32m    frontend_url = (frontend_url or current_app.config.get("FRONTEND_URL", "http://localhost:5173")).rstrip("/")[m
+     return f"""[m
+ <!DOCTYPE html>[m
+ <html>[m
+[36m@@ -132,7 +133,7 @@[m [mdef render_welcome_email(to_name):[m
+         <li>Place orders with demo checkout</li>[m
+       </ul>[m
+       <div style="text-align: center; margin: 30px 0;">[m
+[31m-        <a href="http://localhost:5173/books" style="display: inline-block; background: #E8722C; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 30px; font-weight: bold; font-size: 16px;">[m
+[32m+[m[32m        <a href="{frontend_url}/books" style="display: inline-block; background: #E8722C; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 30px; font-weight: bold; font-size: 16px;">[m
+           Visit BookVerse[m
+         </a>[m
+       </div>[m
+[36m@@ -168,11 +169,11 @@[m [mdef send_welcome_email(user):[m
+ [m
+ [m
+ def can_resend_verification(user):[m
+[31m-  if not user.verification_sent_at:[m
+[32m+[m[32m    if not user.verification_sent_at:[m
+         return True, ""[m
+[31m-  elapsed = datetime.utcnow() - user.verification_sent_at[m
+[31m-  remaining = timedelta(minutes=RESEND_COOLDOWN_MINUTES) - elapsed[m
+[31m-  if remaining.total_seconds() <= 0:[m
+[32m+[m[32m    elapsed = datetime.utcnow() - user.verification_sent_at[m
+[32m+[m[32m    remaining = timedelta(minutes=RESEND_COOLDOWN_MINUTES) - elapsed[m
+[32m+[m[32m    if remaining.total_seconds() <= 0:[m
+         return True, ""[m
+[31m-  mins = remaining.total_seconds() / 60[m
+[31m-  return False, f"Please wait {int(mins) + 1} minutes before requesting a new verification email."[m
+[32m+[m[32m    mins = remaining.total_seconds() / 60[m
+[32m+[m[32m    return False, f"Please wait {int(mins) + 1} minutes before requesting a new verification email."[m
+[1mdiff --git a/frontend/src/services/urls.js b/frontend/src/services/urls.js[m
+[1mindex 26874f3..149df49 100644[m
+[1m--- a/frontend/src/services/urls.js[m
+[1m+++ b/frontend/src/services/urls.js[m
+[36m@@ -1,4 +1,5 @@[m
+[31m-const API_

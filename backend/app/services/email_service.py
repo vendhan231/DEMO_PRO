@@ -108,7 +108,8 @@ def render_verification_email(to_name, token, frontend_url=None):
 </html>"""
 
 
-def render_welcome_email(to_name):
+def render_welcome_email(to_name, frontend_url=None):
+    frontend_url = (frontend_url or current_app.config.get("FRONTEND_URL", "http://localhost:5173")).rstrip("/")
     return f"""
 <!DOCTYPE html>
 <html>
@@ -132,7 +133,7 @@ def render_welcome_email(to_name):
         <li>Place orders with demo checkout</li>
       </ul>
       <div style="text-align: center; margin: 30px 0;">
-        <a href="http://localhost:5173/books" style="display: inline-block; background: #E8722C; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 30px; font-weight: bold; font-size: 16px;">
+        <a href="{frontend_url}/books" style="display: inline-block; background: #E8722C; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 30px; font-weight: bold; font-size: 16px;">
           Visit BookVerse
         </a>
       </div>
@@ -168,11 +169,11 @@ def send_welcome_email(user):
 
 
 def can_resend_verification(user):
-  if not user.verification_sent_at:
+    if not user.verification_sent_at:
         return True, ""
-  elapsed = datetime.utcnow() - user.verification_sent_at
-  remaining = timedelta(minutes=RESEND_COOLDOWN_MINUTES) - elapsed
-  if remaining.total_seconds() <= 0:
+    elapsed = datetime.utcnow() - user.verification_sent_at
+    remaining = timedelta(minutes=RESEND_COOLDOWN_MINUTES) - elapsed
+    if remaining.total_seconds() <= 0:
         return True, ""
-  mins = remaining.total_seconds() / 60
-  return False, f"Please wait {int(mins) + 1} minutes before requesting a new verification email."
+    mins = remaining.total_seconds() / 60
+    return False, f"Please wait {int(mins) + 1} minutes before requesting a new verification email."
