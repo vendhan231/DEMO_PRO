@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext"
 import api from "../services/api"
 import { mediaUrl } from "../services/urls"
 import BookCard from "../components/BookCard"
-import { Search, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 
 const Home = () => {
   const [books, setBooks] = useState([])
@@ -78,11 +78,6 @@ const Home = () => {
     <div className="space-y-0">
       <div className="bg-white border-b border-border-light">
         <div className="container mx-auto px-4 py-3 flex items-center space-x-4">
-          <button className="flex items-center space-x-2 text-sm text-navy hover:text-orange transition-colors">
-            <MapPin size={16} />
-            <span>Delivering to 10001, New York</span>
-          </button>
-
           <div className="flex-1 relative">
             <input
               type="text"
