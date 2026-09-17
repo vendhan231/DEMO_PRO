@@ -27,10 +27,7 @@ def generate_upload_signature(resource_type="image", folder=None):
         return None
 
     timestamp = int(time.time())
-    params = {
-        "timestamp": timestamp,
-        "resource_type": resource_type,
-    }
+    params = {"timestamp": timestamp}
     if folder:
         params["folder"] = folder
 
