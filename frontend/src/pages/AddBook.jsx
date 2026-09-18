@@ -53,8 +53,8 @@ const AddBook = () => {
         setError("Please upload a valid PDF file")
         return
       }
-      if (file.size > 50 * 1024 * 1024) {
-        setError("Book PDF must be less than 50MB")
+      if (file.size > 10 * 1024 * 1024) {
+        setError("Book PDF must be less than 10MB (Cloudinary Free plan limit)")
         return
       }
       setBookFile(file)
@@ -277,7 +277,7 @@ const AddBook = () => {
                 <span className="text-neutral-light"> ({(bookFile.size / 1024 / 1024).toFixed(2)} MB)</span>
               </div>
             )}
-            <p className="text-xs text-neutral-light mt-1">PDF files only (max 50MB)</p>
+            <p className="text-xs text-neutral-light mt-1">PDF files only (max 10MB)</p>
           </div>
 
           <div>
