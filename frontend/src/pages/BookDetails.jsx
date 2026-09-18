@@ -147,13 +147,34 @@ const BookDetails = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4 mt-4">
+            <div className="flex flex-wrap items-center gap-3 mt-4">
               <button
                 onClick={handleAddToCart}
                 className="btn-primary px-6 py-3 text-base font-semibold"
               >
                 Add to Cart
               </button>
+              {pdfUrl ? (
+                <>
+                  <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary px-5 py-3 text-base font-semibold"
+                  >
+                    View Book
+                  </a>
+                  <a
+                    href={pdfDownloadUrl}
+                    download
+                    className="btn-secondary px-5 py-3 text-base font-semibold"
+                  >
+                    Download PDF
+                  </a>
+                </>
+              ) : (
+                <span className="text-sm text-neutral-light">PDF not available for this book.</span>
+              )}
               {canModify && (
                 <>
                   <button
