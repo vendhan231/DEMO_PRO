@@ -117,7 +117,11 @@ const EditBook = () => {
       }
       if (bookFile) {
         const pdfUpload = await api.uploadPdf(bookFile)
-        formData.append("book_file_url", pdfUpload.secure_url)
+        const pdfUrl = pdfUpload.secure_url || pdfUpload.url
+        if (!pdfUrl) {
+          throw new Error("PDF upload completed without a usable file URL")
+        }
+        formData.append("book_file_url", pdfUrl)
         formData.append("book_file_public_id", pdfUpload.public_id || "")
       }
       const res = await api.updateBook(id, formData)
