@@ -319,7 +319,12 @@ def serialize_order(order):
     db = get_db()
     items = []
     for item in db.order_items.find({"order_id": order.get("id")}).sort("id", 1):
-        book_file_url = item.get("book_file_url") or (f"/uploads/books/{item.get('book_file')}" if item.get("book_file") else None)
+        book = get_book_by_id(item.get("book_id"))
+        book_file_url = item.get("book_file_url")
+        if not book_file_url and book:
+            book_file_url = book.get("book_file_url") or (f"/uploads/books/{book.get('book_file')}" if book.get("book_file") else None)
+        if not book_file_url and item.get("book_file"):
+            book_file_url = f"/uploads/books/{item.get('book_file')}"
         items.append({"id": item.get("id"), "book_id": item.get("book_id"), "title": item.get("title"), "author": item.get("author"), "quantity": item.get("quantity", 1), "unit_price": item.get("unit_price", 0), "subtotal": item.get("unit_price", 0) * item.get("quantity", 1), "book_file": item.get("book_file"), "book_file_url": book_file_url})
     return {"id": order.get("id"), "user_id": order.get("user_id"), "total_amount": order.get("total_amount", 0), "status": order.get("status", "placed"), "created_at": order.get("created_at").isoformat() if order.get("created_at") else None, "items": items}
 

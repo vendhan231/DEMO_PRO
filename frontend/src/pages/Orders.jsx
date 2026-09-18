@@ -54,9 +54,9 @@ const Orders = () => {
                       <p className="text-sm text-neutral-light">{item.author} · Qty {item.quantity}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Link to={`/books/${item.book_id}`} className="text-orange inline-flex items-center gap-1" title="View book"><Eye size={18} /> View</Link>
-                      {(item.book_file_url || item.book_file) && <a href={item.book_file_url || mediaUrl(`/uploads/books/${item.book_file}`)} target="_blank" rel="noopener noreferrer" className="text-orange inline-flex items-center gap-1" title="View book file"><Eye size={18} /> Read</a>}
-                      {(item.book_file_url || item.book_file) && <a href={item.book_file_url || mediaUrl(`/uploads/books/${item.book_file}`)} download className="text-orange inline-flex items-center gap-1" title="Download book"><Download size={18} /> Download</a>}
+                      <Link to={`/books/${item.book_id}`} className="text-orange inline-flex items-center gap-1" title="View book"><Eye size={18} /> View Book</Link>
+                      {(item.book_file_url || item.book_file) && <a href={item.book_file_url || mediaUrl(`/uploads/books/${item.book_file}`)} target="_blank" rel="noopener noreferrer" className="text-orange inline-flex items-center gap-1" title="View PDF"><Eye size={18} /> View PDF</a>}
+                      {(item.book_file_url || item.book_file) && <a href={(item.book_file_url || mediaUrl(`/uploads/books/${item.book_file}`)).includes("res.cloudinary.com") ? (item.book_file_url || mediaUrl(`/uploads/books/${item.book_file}`)).replace("/raw/upload/", "/raw/upload/fl_attachment/") : (item.book_file_url || mediaUrl(`/uploads/books/${item.book_file}`))} download className="text-orange inline-flex items-center gap-1" title="Download PDF"><Download size={18} /> Download PDF</a>}
                     </div>
                   </div>
                 ))}
