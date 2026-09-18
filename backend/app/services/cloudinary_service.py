@@ -30,6 +30,8 @@ def generate_upload_signature(resource_type="image", folder=None):
     params = {"timestamp": timestamp}
     if folder:
         params["folder"] = folder
+    if resource_type == "raw":
+        params["access_mode"] = "public"
 
     signature = cloudinary.utils.api_sign_request(params, current_app.config["CLOUDINARY_API_SECRET"])
     return {
@@ -39,6 +41,7 @@ def generate_upload_signature(resource_type="image", folder=None):
         "cloud_name": current_app.config["CLOUDINARY_CLOUD_NAME"],
         "folder": folder or "",
         "resource_type": resource_type,
+        "access_mode": params.get("access_mode"),
     }
 
 
@@ -112,11 +115,11 @@ def signed_asset_url(public_id, resource_type="raw"):
     if not public_id or not init_cloudinary():
         return None
 
-    url, _ = cloudinary.utils.cloudinary_url(
+    file_format = public_id.rsplit(".", 1)[-1] if "." in public_id else "pdf"
+    return cloudinary.utils.private_download_url(
         public_id,
+        file_format,
         resource_type=resource_type,
         type="upload",
-        secure=True,
-        sign_url=True,
+        attachment=False,
     )
-    return url

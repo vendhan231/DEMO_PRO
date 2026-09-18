@@ -322,8 +322,10 @@ def serialize_order(order):
     for item in db.order_items.find({"order_id": order.get("id")}).sort("id", 1):
         book = get_book_by_id(item.get("book_id"))
         book_file_url = item.get("book_file_url")
-        if not book_file_url and book:
-            book_file_url = signed_asset_url(book.get("book_file_public_id"), "raw") or book.get("book_file_url") or (f"/uploads/books/{book.get('book_file')}" if book.get("book_file") else None)
+        if book:
+            book_file_url = signed_asset_url(book.get("book_file_public_id"), "raw") or book_file_url
+            if not book_file_url:
+                book_file_url = book.get("book_file_url") or (f"/uploads/books/{book.get('book_file')}" if book.get("book_file") else None)
         if not book_file_url and item.get("book_file"):
             book_file_url = f"/uploads/books/{item.get('book_file')}"
         items.append({"id": item.get("id"), "book_id": item.get("book_id"), "title": item.get("title"), "author": item.get("author"), "quantity": item.get("quantity", 1), "unit_price": item.get("unit_price", 0), "subtotal": item.get("unit_price", 0) * item.get("quantity", 1), "book_file": item.get("book_file"), "book_file_url": book_file_url})

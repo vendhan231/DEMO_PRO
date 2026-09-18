@@ -59,6 +59,7 @@ async function uploadToCloudinary(file, resourceType) {
   formData.append("timestamp", signatureData.timestamp.toString())
   formData.append("signature", signatureData.signature)
   if (signatureData.folder) formData.append("folder", signatureData.folder)
+  if (signatureData.access_mode) formData.append("access_mode", signatureData.access_mode)
 
   const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${signatureData.cloud_name}/${resourceType}/upload`
   const uploadRes = await fetch(cloudinaryUrl, {
