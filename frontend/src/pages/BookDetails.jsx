@@ -71,6 +71,10 @@ const BookDetails = () => {
   const coverUrl = imgError
     ? null
     : book.cover_url || (book.cover_image ? mediaUrl(`/uploads/covers/${book.cover_image}`) : null)
+  const pdfUrl = book.book_file_url || (book.book_file ? mediaUrl(`/uploads/books/${book.book_file}`) : null)
+  const pdfDownloadUrl = pdfUrl?.includes("res.cloudinary.com")
+    ? pdfUrl.replace("/raw/upload/", "/raw/upload/fl_attachment/")
+    : pdfUrl
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -89,10 +93,10 @@ const BookDetails = () => {
                 <div className="w-full h-full flex items-center justify-center text-6xl">📚</div>
               )}
             </div>
-            {(book.book_file_url || book.book_file) && (
+            {pdfUrl && (
               <div className="flex justify-center gap-4 mt-3 text-sm">
                 <a
-                  href={book.book_file_url || mediaUrl(`/uploads/books/${book.book_file}`)}
+                  href={pdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue hover:underline"
@@ -100,7 +104,7 @@ const BookDetails = () => {
                   View PDF
                 </a>
                 <a
-                  href={book.book_file_url || mediaUrl(`/uploads/books/${book.book_file}`)}
+                  href={pdfDownloadUrl}
                   download
                   className="text-orange hover:underline"
                 >

@@ -77,6 +77,11 @@ const AddBook = () => {
       return
     }
 
+    if (!bookFile) {
+      setError("Please upload a book PDF")
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -235,7 +240,7 @@ const AddBook = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-navy mb-1">Book PDF</label>
+            <label className="block text-sm font-medium text-navy mb-1">Book PDF *</label>
             <div className="flex items-center space-x-4">
               <button
                 type="button"
@@ -291,7 +296,7 @@ const AddBook = () => {
             </button>
             <button
               type="submit"
-              disabled={loading || !coverImage}
+              disabled={loading || !coverImage || !bookFile}
               className="btn-primary px-6 py-2 disabled:opacity-50"
             >
               {loading ? "Adding Book..." : "+ Add Book"}
