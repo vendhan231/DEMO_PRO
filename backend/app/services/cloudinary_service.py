@@ -106,3 +106,17 @@ def is_cloudinary_configured():
     api_key = current_app.config.get("CLOUDINARY_API_KEY")
     api_secret = current_app.config.get("CLOUDINARY_API_SECRET")
     return bool(cloud_name and api_key and api_secret)
+
+
+def signed_asset_url(public_id, resource_type="raw"):
+    if not public_id or not init_cloudinary():
+        return None
+
+    url, _ = cloudinary.utils.cloudinary_url(
+        public_id,
+        resource_type=resource_type,
+        type="upload",
+        secure=True,
+        sign_url=True,
+    )
+    return url
