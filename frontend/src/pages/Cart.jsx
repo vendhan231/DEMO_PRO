@@ -4,7 +4,7 @@ import { useCart } from "../context/CartContext"
 import { useAuth } from "../context/AuthContext"
 import api from "../services/api"
 import { mediaUrl } from "../services/urls"
-import { Trash2, Plus, Minus } from "lucide-react"
+import { Trash2, Plus, Minus, Eye, Download } from "lucide-react"
 
 const CartPage = () => {
   const { cart, loading, updateItem, removeItem, clearCart } = useCart()
@@ -93,6 +93,36 @@ const CartPage = () => {
               <p className="text-sm text-neutral-light mt-1">
                 ₹{item.book?.price.toFixed(0)} × {item.quantity} = <span className="font-bold text-navy">₹{item.subtotal.toFixed(0)}</span>
               </p>
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm">
+                <Link
+                  to={`/books/${item.book?.id}`}
+                  className="inline-flex items-center gap-1 text-blue hover:underline"
+                >
+                  <Eye size={14} />
+                  View Details
+                </Link>
+                {(item.book?.book_file_url || item.book?.book_file) && (
+                  <>
+                    <a
+                      href={item.book.book_file_url || mediaUrl(`/uploads/books/${item.book.book_file}`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue hover:underline"
+                    >
+                      <Eye size={14} />
+                      View PDF
+                    </a>
+                    <a
+                      href={item.book.book_file_url || mediaUrl(`/uploads/books/${item.book.book_file}`)}
+                      download
+                      className="inline-flex items-center gap-1 text-orange hover:underline"
+                    >
+                      <Download size={14} />
+                      Download PDF
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
