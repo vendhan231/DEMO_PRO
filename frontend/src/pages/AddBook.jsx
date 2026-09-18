@@ -53,8 +53,8 @@ const AddBook = () => {
         setError("Please upload a valid PDF file")
         return
       }
-      if (file.size > 2 * 1024 * 1024) {
-        setError("Book PDF must be less than 2MB (Vercel limit: 4.5MB total request size)")
+      if (file.size > 50 * 1024 * 1024) {
+        setError("Book PDF must be less than 50MB")
         return
       }
       setBookFile(file)
@@ -277,7 +277,7 @@ const AddBook = () => {
                 <span className="text-neutral-light"> ({(bookFile.size / 1024 / 1024).toFixed(2)} MB)</span>
               </div>
             )}
-            <p className="text-xs text-neutral-light mt-1">PDF files only (max 2MB)</p>
+            <p className="text-xs text-neutral-light mt-1">PDF files only (max 50MB)</p>
           </div>
 
           <div>
