@@ -13,7 +13,7 @@ const BookCard = ({ book, onUpdate, discountPercent = 0, inStock = true }) => {
   const { addItem } = useCart()
   const navigate = useNavigate()
 
-  const isOwner = user && book.uploaded_by && book.uploaded_by === user.id
+  const isOwner = user && book.uploaded_by && Number(book.uploaded_by) === Number(user.id)
   const canModify = isAuthenticated && (isAdmin || isOwner)
 
   const handleAddToCart = async () => {

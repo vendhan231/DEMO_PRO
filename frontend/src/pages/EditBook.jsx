@@ -34,7 +34,7 @@ const EditBook = () => {
         const res = await api.getBook(id)
         if (res.book) {
           const book = res.book
-          const isOwner = book.uploaded_by && book.uploaded_by === user.id
+          const isOwner = book.uploaded_by && Number(book.uploaded_by) === Number(user.id)
           if (!isOwner && !isAdmin) {
             navigate("/")
             return
